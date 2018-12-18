@@ -127,7 +127,10 @@ def index(mocker):
 
 def test_index(mocker, index, main, xbmcplugin, ExtendedListItem):
     from resources.lib.addonutils import build_icon_path
+<<<<<<< HEAD
 
+=======
+>>>>>>> support icons for main menu items
     main()
     expected_results = [
         (handle, plugin.format("profile"), u"Профиль", "profile", False),
@@ -136,6 +139,7 @@ def test_index(mocker, index, main, xbmcplugin, ExtendedListItem):
         (handle, plugin.format("watching"), u"Я смотрю", "watching", True),
         (handle, plugin.format("watching_movies"), u"Недосмотренные", "watching_movies", True),
         (handle, plugin.format("items?type=None"), u"Последние", "new", True),
+<<<<<<< HEAD
         (
             handle,
             plugin.format("items?type=None&shortcut=%2Fpopular"),
@@ -143,6 +147,10 @@ def test_index(mocker, index, main, xbmcplugin, ExtendedListItem):
             "popular",
             True,
         ),
+=======
+        (handle, plugin.format("items?type=None&shortcut=%2Fpopular"),
+         u"Популярные", "popular", True),
+>>>>>>> support icons for main menu items
         (handle, plugin.format("items?type=None&shortcut=%2Fhot"), u"Горячие", "hot", True),
         (handle, plugin.format("tv"), u"ТВ", "tv", True),
         (handle, plugin.format("collections"), u"Подборки", "collections", True),
@@ -152,6 +160,7 @@ def test_index(mocker, index, main, xbmcplugin, ExtendedListItem):
         (handle, plugin.format("item_index?type=4k"), u"4K", "4k", True),
         (handle, plugin.format("item_index?type=3d"), u"3D", "3d", True),
         (handle, plugin.format("item_index?type=concert"), u"Концерты", "concert", True),
+<<<<<<< HEAD
         (
             handle,
             plugin.format("item_index?type=documovie"),
@@ -166,6 +175,12 @@ def test_index(mocker, index, main, xbmcplugin, ExtendedListItem):
             "docuserial",
             True,
         ),
+=======
+        (handle, plugin.format("item_index?type=documovie"),
+         u"Документальные фильмы", "documovie", True),
+        (handle, plugin.format("item_index?type=docuserial"),
+         u"Документальные сериалы", "docuserial", True)
+>>>>>>> support icons for main menu items
     ]
     for result in expected_results:
         handle_, link, title, icon, is_directory = result

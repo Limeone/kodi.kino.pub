@@ -18,10 +18,18 @@ main_menu_items = [
         eval(xbmcaddon.Addon(id=__id__).getSetting("show_search").title()),
     ),
     MainMenuItem(
-        "Закладки", get_internal_link("bookmarks"), build_icon_path("bookmarks"), True, True
+        "Закладки",
+        get_internal_link("bookmarks"),
+        build_icon_path('bookmarks'),
+        True,
+        True
     ),
     MainMenuItem(
-        "Я смотрю", get_internal_link("watching"), build_icon_path("watching"), True, True
+        "Я смотрю",
+        get_internal_link("watching"),
+        build_icon_path('watching'),
+        True,
+        True
     ),
     MainMenuItem(
         "Недосмотренные",
