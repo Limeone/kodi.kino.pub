@@ -33,13 +33,13 @@ class ExtendedListItem(ListItem):
         label = u"Не буду смотреть" if int(in_watchlist) else u"Буду смотреть"
         link = get_internal_link(
             "toggle_watchlist",
-            id=self.getProperty("id"),
+            id=self.getProperty("item_id"),
             added=int(not int(in_watchlist))
         )
         menu_items.append((label, "Container.Update({})".format(link)))
 
     def _addWatchedContextMenuItem(self, menu_items):
-        item_id = self.getProperty("id")
+        item_id = self.getProperty("item_id")
         season_number = self.getVideoInfoTag().getSeason()
         video_number = self.getVideoInfoTag().getEpisode()
         video_number = video_number if video_number != -1 else 1
@@ -61,7 +61,7 @@ class ExtendedListItem(ListItem):
     def _addBookmarksContextMenuItem(self, menu_items):
         if self.getVideoInfoTag().getMediaType() == "season":
             return
-        item_id = self.getProperty("id")
+        item_id = self.getProperty("item_id")
         label = u"Изменить закладки"
         link = get_internal_link("edit_bookmarks", item_id=item_id)
         menu_items.append((label, "Container.Update({})".format(link)))
