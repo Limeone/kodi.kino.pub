@@ -46,7 +46,7 @@ def get_mlink(video, stream_type=None, quality=None, ask_quality="false"):
     # movies trailers come in format: files = {"quality": "url"}
     if isinstance(files.values()[0], basestring):
         files = {"{}p".format(quality): {stream_type: url} for quality, url in files.items()}
-        
+
     flatten_urls_dict = {"{}@{}".format(quality, stream): url for quality, urls in files.items()
                          for stream, url in urls.items()}
     urls_list = natural_sort(flatten_urls_dict.keys())
@@ -113,10 +113,7 @@ def get_status(item):
         return
 
 def build_imdb_number(item):
-    if isinstance(item["imdb"], int):
-        return "tt{}".format(item["imdb"])
-    else:
-        return item["imdb"]
+    return "tt{:07d}".format(int(item["imdb"]))
 
 
 def build_titles(item):
