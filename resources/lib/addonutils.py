@@ -42,6 +42,11 @@ def get_mlink(video, stream_type=None, quality=None, ask_quality="false"):
         return sorted(l, key=alphanum_key)
 
     files = {f["quality"]: f["url"] for f in video["files"]}
+
+    # movies trailers come in format: files = {"quality": "url"}
+    if isinstance(files.values()[0], basestring):
+        files = {"{}p".format(quality): {stream_type: url} for quality, url in files.items()}
+        
     flatten_urls_dict = {"{}@{}".format(quality, stream): url for quality, urls in files.items()
                          for stream, url in urls.items()}
     urls_list = natural_sort(flatten_urls_dict.keys())
