@@ -86,6 +86,11 @@ def settings():
     from resources.lib.data import __settings__
     return __settings__
 
+@pytest.fixture
+def build_imdb_number():
+    from resources.lib.addonutils import build_imdb_number
+    return build_imdb_number
+
 
 @pytest.fixture
 def fake_kodi_api(mocker):
@@ -175,7 +180,7 @@ def play(request, mocker, settings):
     return request.param
 
 
-def test_play(play, main, ExtendedListItem, xbmcplugin):
+def test_play(play, main, ExtendedListItem, xbmcplugin, build_imdb_number):
     stream, video_quality = play
     main()
     title = actionPlay_response["item"]["title"].encode("utf-8")
@@ -190,7 +195,7 @@ def test_play(play, main, ExtendedListItem, xbmcplugin):
             "video_number": 1,
             "season_number": "",
             "playcount": 0,
-            "imdbnumber": actionPlay_response["item"]["imdb"]
+            "imdbnumber": build_imdb_number(actionPlay_response["item"])
         },
         poster=None,
         subtitles=[]
