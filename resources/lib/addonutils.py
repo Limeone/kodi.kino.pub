@@ -14,6 +14,9 @@ import xbmcgui
 from data import __id__
 from data import __plugin__
 
+__extended_plot__ = __settings__.getSetting('extended_plot')
+__ratings_source__ = __settings__.getSetting('ratings_source')
+
 
 def set_window_property(value):
     xbmcgui.Window(10000).clearProperty("video.kino.pub-playback_dict")
@@ -76,6 +79,9 @@ def get_mlink(video, stream_type=None, quality=None, ask_quality="false"):
 
 
 def build_plot(item):
+    # Don't put rating to plot if user don't want to
+    if __extended_plot__ == "false":
+        return item["plot"]
     final_plot = []
     if item["imdb_rating"]:
         final_plot.append("IMDB: {}".format(str(round(item["imdb_rating"], 1))))
@@ -86,6 +92,22 @@ def build_plot(item):
         final_plot.append("")
     final_plot.append(item["plot"])
     return "\n".join(final_plot)
+
+
+# Take rating from specified resource if this rating exist
+def build_rating(item):
+    
+    rating = item["imdb_rating"] if __ratings_source__ == 'IMDB' else item["kinopoisk_rating"]
+
+    if __ratings_source__ == "IMDB":
+        rating = item["imdb_rating"]
+    elif __ratings_source__ == "Kino.Pub":
+        rating = item["rating"]
+    else:
+        rating = item["kinopoisk_rating"]
+    
+    if rating:
+        return float(rating)
 
 
 # Build path to icon according to it's name
@@ -108,7 +130,7 @@ def video_info(item, extend=None):
     info = {
         "year": int(item["year"]),
         "genre": ", ".join([x["title"] for x in item["genres"]]),
-        "rating": float(item["rating"]),
+        "rating": build_rating(item),
         "cast": [x.strip() for x in item["cast"].split(",")],
         "director": item["director"],
         "plot": build_plot(item),
