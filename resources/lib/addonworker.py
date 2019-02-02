@@ -48,7 +48,7 @@ def show_items(items, add_indexes=False):
         li = ExtendedListItem(
             title,
             poster=item["posters"]["big"],
-            properties={"id": item["id"]}
+            properties={"itemId": item["id"]}
         )
         if "in_watchlist" in item:
             li.setProperty("in_watchlist", str(int(item["in_watchlist"])))
@@ -220,7 +220,7 @@ def seasons(id):
                 "mediatype": "season"
             }),
             poster=item["posters"]["big"],
-            properties={"id": item["id"]},
+            properties={"itemId": item["id"]},
             addContextMenuItems=True
         )
         if watching_season["status"] < 1 and not selectedSeason:
@@ -258,7 +258,7 @@ def episodes(id):
             thumbnailImage=video["thumbnail"],
             video_info=info,
             poster=item["posters"]["big"],
-            properties={"id": item["id"], "isPlayable": "true"},
+            properties={"itemId": item["id"], "isPlayable": "true"},
             addContextMenuItems=True
         )
         link = get_internal_link(
@@ -306,7 +306,7 @@ def season_episodes(id, season_number):
             thumbnailImage=episode["thumbnail"],
             poster=item["posters"]["big"],
             video_info=info,
-            properties={"id": item["id"], "isPlayable": "true"},
+            properties={"itemId": item["id"], "isPlayable": "true"},
             addContextMenuItems=True
         )
         if watching_episode["status"] < 1 and not selectedEpisode:
@@ -345,7 +345,7 @@ def play(id, title, video_info, video_data=None, poster=None):
         title,
         path=url,
         properties={
-            "id": id,
+            "itemId": id,
             "play_duration": video_info["duration"],
             "play_resumetime": video_info["time"],
             "video_number": video_info.get("episode", 1),
@@ -436,7 +436,7 @@ def watching():
             title,
             str(item["new"]),
             poster=item["posters"]["big"],
-            properties={"id": str(item["id"]), "in_watchlist": "1"},
+            properties={"itemId": str(item["id"]), "in_watchlist": "1"},
             video_info={"mediatype": mediatype_map[item["type"]]},
             addContextMenuItems=True
         )
@@ -452,7 +452,7 @@ def watching_movies():
         li = ExtendedListItem(
             item["title"].encode("utf-8"),
             poster=item["posters"]["big"],
-            properties={"id": item["id"]},
+            properties={"itemId": item["id"]},
             video_info={"mediatype": mediatype_map[item["type"]]},
             addContextMenuItems=True
         )
