@@ -136,7 +136,7 @@ def login():
 
 
 @route("/")
-def index():
+def index(**kwargs):
     """Main screen - show type list"""
     if not auth.access_token:
         # Use icons from lib for default headings
@@ -166,13 +166,13 @@ def index():
 
 
 @route("/item_index")
-def default_headings(type):
+def default_headings(type, **kwargs):
     add_default_headings(type, "slpgah")
     xbmcplugin.endOfDirectory(request.handle)
 
 
 @route("/tv")
-def tv():
+def tv(**kwargs):
     response = KinoPubClient("tv/index").get()
     for ch in response["channels"]:
         li = ExtendedListItem(ch["title"].encode("utf-8"), iconImage=ch["logos"]["s"])
@@ -181,7 +181,7 @@ def tv():
 
 
 @route("/genres")
-def genres(type):
+def genres(type, **kwargs):
     response = KinoPubClient("genres").get(data={"type": type})
     add_default_headings(type)
     for genre in response["items"]:
@@ -204,7 +204,7 @@ def items(type, **kwargs):
 
 
 @route("/view_seasons")
-def seasons(id):
+def seasons(id, **kwargs):
     item = KinoPubClient("items/{}".format(id)).get()["item"]
     watching_info = KinoPubClient("watching").get(data={"id": item["id"]})["item"]
     selectedSeason = False
@@ -236,7 +236,7 @@ def seasons(id):
 
 
 @route("/view_episodes")
-def episodes(id):
+def episodes(id, **kwargs):
     item = KinoPubClient("items/{}".format(id)).get()["item"]
     watching_info = KinoPubClient("watching").get(data={"id": id})["item"]
     xbmcplugin.setContent(request.handle, "episodes")
@@ -274,7 +274,7 @@ def episodes(id):
 
 
 @route("/view_season_episodes")
-def season_episodes(id, season_number):
+def season_episodes(id, season_number, **kwargs):
     item = KinoPubClient("items/{}".format(id)).get()["item"]
     watching_info = KinoPubClient("watching").get(data={"id": id})["item"]
     season_number = int(season_number)
@@ -394,7 +394,7 @@ def search(type=None):
 
 
 @route("/bookmarks")
-def bookmarks(folder_id=None, page=None):
+def bookmarks(folder_id=None, page=None, **kwargs):
     if folder_id is None:
         img = build_icon_path('create_bookmarks_folder')
         li = ExtendedListItem("Создать папку", iconImage=img, thumbnailImage=img)
@@ -426,7 +426,7 @@ def bookmarks(folder_id=None, page=None):
 
 
 @route("/watching")
-def watching():
+def watching(**kwargs):
     response = KinoPubClient("watching/serials").get(data={"subscribed": 1})
     xbmcplugin.setContent(request.handle, "tvshows")
     for item in response["items"]:
@@ -446,7 +446,7 @@ def watching():
 
 
 @route("/watching_movies")
-def watching_movies():
+def watching_movies(**kwargs):
     xbmcplugin.setContent(request.handle, "movies")
     for item in KinoPubClient("watching/movies").get()["items"]:
         li = ExtendedListItem(
@@ -484,7 +484,7 @@ def watching_movies():
 
 
 @route("/collections")
-def collections(sort=None, page=None):
+def collections(sort=None, page=None, **kwargs):
     response = KinoPubClient("collections/index").get(data={"sort": sort, "page": page})
     xbmcplugin.setContent(request.handle, "movies")
 
@@ -513,14 +513,14 @@ def collections(sort=None, page=None):
 
 
 @route("/collection_view")
-def collection_view(id):
+def collection_view(id, **kwargs):
     response = KinoPubClient("collections/view").get(data={"id": id})
     show_items(response["items"], add_indexes=True)
     xbmcplugin.endOfDirectory(request.handle)
 
 
 @route("/alphabet")
-def alphabet(type):
+def alphabet(type, **kwargs):
     alpha = [
         "А,Б,В,Г,Д,Е,Ё,Ж,З,И,Й,К,Л,М,Н,О,П,Р,С,Т,У,Ф,Х,Ц,Ч,Ш,Щ,Ы,Э,Ю,Я",
         "A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z"
