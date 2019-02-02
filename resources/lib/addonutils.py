@@ -96,7 +96,7 @@ def build_plot(item):
 
 # Take rating from specified resource if this rating exist
 def build_rating(item):
-    
+
     rating = item["imdb_rating"] if __ratings_source__ == 'IMDB' else item["kinopoisk_rating"]
 
     if __ratings_source__ == "IMDB":
@@ -125,8 +125,16 @@ def get_status(item):
     else:
         return
 
+def build_titles(item):
+    try:
+        title, original_title = item['title'].split(" / ")
+    except ValueError:
+        original_title = title = item['title']
+    return title, original_title
+
 
 def video_info(item, extend=None):
+    title, original_title = build_titles(item)
     info = {
         "year": int(item["year"]),
         "genre": ", ".join([x["title"] for x in item["genres"]]),
@@ -134,7 +142,8 @@ def video_info(item, extend=None):
         "cast": [x.strip() for x in item["cast"].split(",")],
         "director": item["director"],
         "plot": build_plot(item),
-        "title": item["title"],
+        "title": title,
+        "originaltitle": original_title,
         "duration": item.get("duration", {}).get("average"),
         "imdbnumber": item["imdb"],
         "status": get_status(item),
