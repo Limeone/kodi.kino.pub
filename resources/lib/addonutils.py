@@ -125,6 +125,13 @@ def get_status(item):
     else:
         return
 
+def build_imdb_number(item):
+    if isinstance(item["imdb"], int):
+        return "tt{}".format(item["imdb"])
+    else:
+        return item["imdb"]
+
+
 def build_titles(item):
     try:
         title, original_title = item['title'].split(" / ")
@@ -145,7 +152,7 @@ def video_info(item, extend=None):
         "title": title,
         "originaltitle": original_title,
         "duration": item.get("duration", {}).get("average"),
-        "imdbnumber": item["imdb"],
+        "imdbnumber": build_imdb_number(item),  # string (tt0110293) - IMDb code
         "status": get_status(item),
         "votes": item["rating_votes"],
         "country": ", ".join([x["title"] for x in item["countries"]]),
