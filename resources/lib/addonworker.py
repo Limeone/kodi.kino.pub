@@ -9,26 +9,9 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
-<<<<<<< HEAD
-from addonutils import (
-    get_internal_link,
-    get_mlink,
-    nav_internal_link,
-    notice,
-    request,
-    route,
-    ROUTES,
-    trailer_link,
-    video_info as extract_video_info,
-    get_window_property,
-    set_window_property,
-    build_icon_path,
-)
-=======
 from addonutils import (get_internal_link, get_mlink, nav_internal_link, notice, request, route,
                         ROUTES, trailer_link, video_info as extract_video_info, get_window_property,
                         set_window_property, wait_for_api_lock, build_icon_path)
->>>>>>> support icons for main menu items
 from authwindow import auth
 from client import KinoPubClient
 from data import __plugin__, __id__
@@ -54,11 +37,7 @@ def show_pagination(pagination, action, **kwargs):
     if pagination and (int(pagination["current"]) + 1 <= int(pagination["total"])):
         kwargs["page"] = int(pagination["current"]) + 1
         # Use icons from lib for default headings
-<<<<<<< HEAD
-        img = build_icon_path("next_page")
-=======
         img = build_icon_path('next_page')
->>>>>>> support icons for main menu items
         li = ExtendedListItem("[COLOR FFFFF000]Вперёд[/COLOR]", iconImage=img, thumbnailImage=img)
         link = get_internal_link(action, **kwargs)
         xbmcplugin.addDirectoryItem(request.handle, link, li, True)
@@ -74,7 +53,11 @@ def show_items(items, add_indexes=False):
     for index, item in enumerate(items, 1):
         title = item["title"].encode("utf-8")
         title = "{}. {}".format(index, title) if add_indexes else title
-        li = ExtendedListItem(title, poster=item["posters"]["big"], properties={"id": item["id"]})
+        li = ExtendedListItem(
+            title,
+            poster=item["posters"]["big"],
+            properties={"itemId": item["id"]}
+        )
         if "in_watchlist" in item:
             li.setProperty("in_watchlist", str(int(item["in_watchlist"])))
         video_info = extract_video_info(
@@ -127,56 +110,32 @@ def add_default_headings(type=None, fmt="slp"):
     # h - show hot
     # Use icons from lib for default headings
     if "s" in fmt:
-<<<<<<< HEAD
         img = build_icon_path("search")
-=======
-        img = build_icon_path('search')
->>>>>>> support icons for main menu items
         li = ExtendedListItem("Поиск", iconImage=img, thumbnailImage=img)
         link = get_internal_link("search", type=type)
         xbmcplugin.addDirectoryItem(request.handle, link, li, False)
     if "l" in fmt:
-<<<<<<< HEAD
         img = build_icon_path("new")
-=======
-        img = build_icon_path('new')
->>>>>>> support icons for main menu items
         li = ExtendedListItem("Последние", iconImage=img, thumbnailImage=img)
         link = get_internal_link("items", type=type)
         xbmcplugin.addDirectoryItem(request.handle, link, li, True)
     if "p" in fmt:
-<<<<<<< HEAD
         img = build_icon_path("popular")
-=======
-        img = build_icon_path('popular')
->>>>>>> support icons for main menu items
         li = ExtendedListItem("Популярные", iconImage=img, thumbnailImage=img)
         link = get_internal_link("items", type=type, shortcut="/popular")
         xbmcplugin.addDirectoryItem(request.handle, link, li, True)
     if "a" in fmt:
-<<<<<<< HEAD
         img = build_icon_path("alphabet")
-=======
-        img = build_icon_path('alphabet')
->>>>>>> support icons for main menu items
         li = ExtendedListItem("По алфавиту", iconImage=img, thumbnailImage=img)
         link = get_internal_link("alphabet", type=type)
         xbmcplugin.addDirectoryItem(request.handle, link, li, True)
     if "g" in fmt:
-<<<<<<< HEAD
         img = build_icon_path("genres")
-=======
-        img = build_icon_path('genres')
->>>>>>> support icons for main menu items
         li = ExtendedListItem("Жанры", iconImage=img, thumbnailImage=img)
         link = get_internal_link("genres", type=type)
         xbmcplugin.addDirectoryItem(request.handle, link, li, True)
     if "h" in fmt:
-<<<<<<< HEAD
         img = build_icon_path("hot")
-=======
-        img = build_icon_path('hot')
->>>>>>> support icons for main menu items
         li = ExtendedListItem("Горячие", iconImage=img, thumbnailImage=img)
         link = get_internal_link("items", type=type, shortcut="/hot")
         xbmcplugin.addDirectoryItem(request.handle, link, li, True)
@@ -192,26 +151,17 @@ def index():
     """Main screen - show type list"""
     if not auth.access_token:
         # Use icons from lib for default headings
-<<<<<<< HEAD
         li = ExtendedListItem("Активировать устройство", iconImage=build_icon_path("activate"))
-=======
-        li = ExtendedListItem("Активировать устройство", iconImage=build_icon_path('activate'))
->>>>>>> support icons for main menu items
         xbmcplugin.addDirectoryItem(request.handle, get_internal_link("login"), li, False)
     else:
         response = KinoPubClient("types").get()
         # Use icons from lib for default headings
-<<<<<<< HEAD
         img = build_icon_path("profile")
-=======
-        img = build_icon_path('profile')
->>>>>>> support icons for main menu items
         li = ExtendedListItem("Профиль", iconImage=img, thumbnailImage=img)
         xbmcplugin.addDirectoryItem(request.handle, get_internal_link("profile"), li, False)
         for menu_item in main_menu_items:
             if menu_item.is_displayed:
                 li = ExtendedListItem(
-<<<<<<< HEAD
                     menu_item.title, iconImage=menu_item.icon, thumbnailImage=menu_item.icon
                 )
                 xbmcplugin.addDirectoryItem(request.handle, menu_item.link, li, menu_item.is_dir)
@@ -219,15 +169,6 @@ def index():
             if xbmcaddon.Addon(id=__id__).getSetting("show_{}".format(i["id"])) != "false":
                 img = build_icon_path(i["id"])
                 li = ExtendedListItem(i["title"].encode("utf-8"))
-=======
-                    menu_item.title,
-                    iconImage=menu_item.icon,
-                    thumbnailImage=menu_item.icon
-                    )
-                xbmcplugin.addDirectoryItem(request.handle, menu_item.link, li, menu_item.is_dir)
-        for i in response["items"]:
-            if xbmcaddon.Addon(id=__id__).getSetting("show_{}".format(i["id"])) != "false":
->>>>>>> support icons for main menu items
                 li = ExtendedListItem(i["title"].encode("utf-8"), iconImage=img, thumbnailImage=img)
                 link = get_internal_link("item_index", type=i["id"])
                 xbmcplugin.addDirectoryItem(request.handle, link, li, True)
@@ -292,8 +233,8 @@ def seasons(id):
                 },
             ),
             poster=item["posters"]["big"],
-            properties={"id": item["id"]},
-            addContextMenuItems=True,
+            properties={"itemId": item["id"]},
+            addContextMenuItems=True
         )
         if watching_season["status"] < 1 and not selectedSeason:
             selectedSeason = True
@@ -330,8 +271,8 @@ def episodes(id):
             thumbnailImage=video["thumbnail"],
             video_info=info,
             poster=item["posters"]["big"],
-            properties={"id": item["id"], "isPlayable": "true"},
-            addContextMenuItems=True,
+            properties={"itemId": item["id"], "isPlayable": "true"},
+            addContextMenuItems=True
         )
         link = get_internal_link("play", id=item["id"], index=video["number"])
         playback_data[video["number"]] = {
@@ -382,8 +323,8 @@ def season_episodes(id, season_number):
             thumbnailImage=episode["thumbnail"],
             poster=item["posters"]["big"],
             video_info=info,
-            properties={"id": item["id"], "isPlayable": "true"},
-            addContextMenuItems=True,
+            properties={"itemId": item["id"], "isPlayable": "true"},
+            addContextMenuItems=True
         )
         if watching_episode["status"] < 1 and not selectedEpisode:
             selectedEpisode = True
@@ -445,6 +386,15 @@ def play(id, index):
             "imdbnumber": video_info["imdbnumber"],
         }
     )
+    properties.update({
+        "itemId": id,
+        "play_duration": video_info["duration"],
+        "play_resumetime": video_info["time"],
+        "video_number": video_info.get("episode", 1),
+        "season_number": video_info.get("season", ""),
+        "playcount": video_info["playcount"],
+        "imdbnumber": video_info["imdbnumber"]
+    })
     li = ExtendedListItem(
         playback_data["title"],
         path=url,
@@ -492,21 +442,13 @@ def search(type=None):
 @route("/bookmarks")
 def bookmarks(folder_id=None, page=None):
     if folder_id is None:
-<<<<<<< HEAD
         img = build_icon_path("create_bookmarks_folder")
-=======
-        img = build_icon_path('create_bookmarks_folder')
->>>>>>> support icons for main menu items
         li = ExtendedListItem("Создать папку", iconImage=img, thumbnailImage=img)
         link = get_internal_link("create_bookmarks_folder")
         xbmcplugin.addDirectoryItem(request.handle, link, li, False)
         response = KinoPubClient("bookmarks").get()
         for folder in response["items"]:
-<<<<<<< HEAD
             img = build_icon_path("bookmark")
-=======
-            img = build_icon_path('bookmark')
->>>>>>> support icons for main menu items
             li = ExtendedListItem(
                 folder["title"].encode("utf-8"),
                 iconImage=img,
@@ -541,7 +483,7 @@ def watching():
             title,
             str(item["new"]),
             poster=item["posters"]["big"],
-            properties={"id": str(item["id"]), "in_watchlist": "1"},
+            properties={"itemId": str(item["id"]), "in_watchlist": "1"},
             video_info={"mediatype": mediatype_map[item["type"]]},
             addContextMenuItems=True,
         )
@@ -558,7 +500,7 @@ def watching_movies():
         li = ExtendedListItem(
             item["title"].encode("utf-8"),
             poster=item["posters"]["big"],
-            properties={"id": item["id"]},
+            properties={"itemId": item["id"]},
             video_info={"mediatype": mediatype_map[item["type"]]},
             addContextMenuItems=True,
         )
@@ -597,29 +539,17 @@ def collections(sort=None, page=None):
     response = KinoPubClient("collections/index").get(data={"sort": sort, "page": page})
     xbmcplugin.setContent(request.handle, "movies")
 
-<<<<<<< HEAD
     img = build_icon_path("new")
-=======
-    img = build_icon_path('new')
->>>>>>> support icons for main menu items
     li = ExtendedListItem("Последние", iconImage=img, thumbnailImage=img)
     link = get_internal_link("collections", sort="-created")
     xbmcplugin.addDirectoryItem(request.handle, link, li, True)
 
-<<<<<<< HEAD
     img = build_icon_path("hot")
-=======
-    img = build_icon_path('hot')
->>>>>>> support icons for main menu items
     li = ExtendedListItem("Просматриваемые", iconImage=img, thumbnailImage=img)
     link = get_internal_link("collections", sort="-watchers")
     xbmcplugin.addDirectoryItem(request.handle, link, li, True)
 
-<<<<<<< HEAD
     img = build_icon_path("popular")
-=======
-    img = build_icon_path('popular')
->>>>>>> support icons for main menu items
     li = ExtendedListItem("Популярные", iconImage=img, thumbnailImage=img)
     link = get_internal_link("collections", sort="-views")
     xbmcplugin.addDirectoryItem(request.handle, link, li, True)

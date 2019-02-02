@@ -225,7 +225,7 @@ def test_play(play, main, ExtendedListItem, xbmcplugin, build_imdb_number):
         title,
         path=link,
         properties={
-            "id": str(actionPlay_response["item"]["id"]),
+            "itemId": str(actionPlay_response["item"]["id"]),
             "play_duration": 0,
             "play_resumetime": 0,
             "video_number": 1,
@@ -296,7 +296,9 @@ def test_items(main, items, ExtendedListItem, xbmcplugin, mocker):
     is_dirs = [False, False, True, True, True]
     for result, link, is_dir in zip(expected_results, links, is_dirs):
         ExtendedListItem.assert_any_call(
-            result["title"], poster=result["poster"], properties={"id": result["id"]}
+            result["title"],
+            poster=result["poster"],
+            properties={"itemId": result["id"]},
         )
         li = ExtendedListItem()
         xbmcplugin.addDirectoryItem.assert_any_call(handle, link, li, is_dir)
@@ -338,7 +340,7 @@ def test_view_seasons(main, view_seasons, ExtendedListItem, xbmcplugin):
                 item, {"season": season["number"], "playcount": -1, "mediatype": "season"}
             ),
             poster=item["posters"]["big"],
-            properties={"id": item["id"]},
+            properties={"itemId": item["id"]},
             addContextMenuItems=True,
         )
         link = plugin.format(
@@ -400,8 +402,8 @@ def test_view_season_episodes(request, main, view_season_episodes, ExtendedListI
             thumbnailImage=episode["thumbnail"],
             poster=item["posters"]["big"],
             video_info=info,
-            properties={"id": item["id"], "isPlayable": "true"},
-            addContextMenuItems=True,
+            properties={"itemId": item["id"], "isPlayable": "true"},
+            addContextMenuItems=True
         )
         xbmcplugin.addDirectoryItem.assert_any_call(handle, link, ExtendedListItem(), False)
     xbmcplugin.setContent.assert_called_once_with(handle, "episodes")
@@ -459,8 +461,8 @@ def test_view_episodes(request, main, view_episodes, ExtendedListItem, xbmcplugi
             thumbnailImage=video["thumbnail"],
             video_info=info,
             poster=item["posters"]["big"],
-            properties={"id": item["id"], "isPlayable": "true"},
-            addContextMenuItems=True,
+            properties={"itemId": item["id"], "isPlayable": "true"},
+            addContextMenuItems=True
         )
         xbmcplugin.addDirectoryItem.assert_any_call(handle, link, ExtendedListItem(), False)
     xbmcplugin.setContent.assert_called_once_with(handle, "episodes")
