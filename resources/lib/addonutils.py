@@ -107,7 +107,7 @@ def build_rating(item):
         rating = item["rating"]
     else:
         rating = item["kinopoisk_rating"]
-    
+
     if rating:
         return float(rating)
 
@@ -126,6 +126,7 @@ def get_status(item):
         return u"в эфире"
     else:
         return
+
 
 def build_imdb_number(item):
     try:

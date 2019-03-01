@@ -49,7 +49,7 @@ class Player(xbmc.Player):
 
     @property
     def _base_data(self):
-        id = self.list_item.getProperty("id")
+        id = self.list_item.getProperty("itemid")
         video_number = self.list_item.getProperty("video_number")
         season_number = self.list_item.getProperty("season_number")
         if season_number:

@@ -56,7 +56,7 @@ def show_items(items, add_indexes=False):
         li = ExtendedListItem(
             title,
             poster=item["posters"]["big"],
-            properties={"itemId": item["id"]}
+            properties={"itemid": item["id"]}
         )
         if "in_watchlist" in item:
             li.setProperty("in_watchlist", str(int(item["in_watchlist"])))
@@ -233,7 +233,7 @@ def seasons(id, **kwargs):
                 },
             ),
             poster=item["posters"]["big"],
-            properties={"itemId": item["id"]},
+            properties={"itemid": item["id"]},
             addContextMenuItems=True
         )
         if watching_season["status"] < 1 and not selectedSeason:
@@ -271,7 +271,7 @@ def episodes(id, **kwargs):
             thumbnailImage=video["thumbnail"],
             video_info=info,
             poster=item["posters"]["big"],
-            properties={"itemId": item["id"], "isPlayable": "true"},
+            properties={"itemid": item["id"], "isPlayable": "true"},
             addContextMenuItems=True
         )
         link = get_internal_link("play", id=item["id"], index=video["number"])
@@ -323,7 +323,7 @@ def season_episodes(id, season_number, **kwargs):
             thumbnailImage=episode["thumbnail"],
             poster=item["posters"]["big"],
             video_info=info,
-            properties={"itemId": item["id"], "isPlayable": "true"},
+            properties={"itemid": item["id"], "isPlayable": "true"},
             addContextMenuItems=True
         )
         if watching_episode["status"] < 1 and not selectedEpisode:
@@ -387,7 +387,7 @@ def play(id, index):
         }
     )
     properties.update({
-        "itemId": id,
+        "itemid": id,
         "play_duration": video_info["duration"],
         "play_resumetime": video_info["time"],
         "video_number": video_info.get("episode", 1),
@@ -483,7 +483,7 @@ def watching(**kwargs):
             title,
             str(item["new"]),
             poster=item["posters"]["big"],
-            properties={"itemId": str(item["id"]), "in_watchlist": "1"},
+            properties={"itemid": str(item["id"]), "in_watchlist": "1"},
             video_info={"mediatype": mediatype_map[item["type"]]},
             addContextMenuItems=True,
         )
