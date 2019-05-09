@@ -58,6 +58,7 @@ def show_items(items, add_indexes=False):
             poster=item["posters"]["big"],
             properties={"itemid": item["id"]}
         )
+        li.setArt({'fanart': item["posters"]["wide"]})
         if "in_watchlist" in item:
             li.setProperty("in_watchlist", str(int(item["in_watchlist"])))
         video_info = extract_video_info(
@@ -236,6 +237,7 @@ def seasons(id, **kwargs):
             properties={"itemid": item["id"]},
             addContextMenuItems=True
         )
+        li.setArt({'fanart': item["posters"]["wide"]})
         if watching_season["status"] < 1 and not selectedSeason:
             selectedSeason = True
             li.select(selectedSeason)
@@ -274,6 +276,7 @@ def episodes(id, **kwargs):
             properties={"itemid": item["id"], "isPlayable": "true"},
             addContextMenuItems=True
         )
+        li.setArt({'fanart': item["posters"]["wide"]})
         link = get_internal_link("play", id=item["id"], index=video["number"])
         playback_data[video["number"]] = {
             "video_data": video,
