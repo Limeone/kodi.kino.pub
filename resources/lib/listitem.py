@@ -77,7 +77,7 @@ class ExtendedListItem(ListItem):
         menu_items.append((label, "Container.Update({})".format(link)))
 
     def _addCommentsContextMenuItem(self, menu_items):
-        item_id = self.getProperty("id")
+        item_id = self.getProperty("itemId")
         label = u"Комментарии KinoPub"
         link = get_internal_link("comments", item_id=item_id)
         menu_items.append((label, "Container.Update({})".format(link)))
