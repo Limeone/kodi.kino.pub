@@ -14,8 +14,8 @@ import xbmcgui
 from data import __id__
 from data import __plugin__
 
-__extended_plot__ = __settings__.getSetting('extended_plot')
-__ratings_source__ = __settings__.getSetting('ratings_source')
+__extended_plot__ = xbmcaddon.Addon(id=__id__).getSetting('extended_plot')
+__ratings_source__ = xbmcaddon.Addon(id=__id__).getSetting('ratings_source')
 
 
 def set_window_property(value):

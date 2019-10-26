@@ -11,7 +11,7 @@ import xbmcgui
 import xbmcplugin
 from addonutils import (get_internal_link, get_mlink, nav_internal_link, notice, request, route,
                         ROUTES, trailer_link, video_info as extract_video_info, get_window_property,
-                        set_window_property, wait_for_api_lock, build_icon_path)
+                        set_window_property, build_icon_path)
 from authwindow import auth
 from client import KinoPubClient
 from data import __plugin__, __id__
