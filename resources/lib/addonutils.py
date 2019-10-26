@@ -14,8 +14,8 @@ import xbmcgui
 from data import __id__
 from data import __plugin__
 
-__extended_plot__ = xbmcaddon.Addon(id=__id__).getSetting('extended_plot')
-__ratings_source__ = xbmcaddon.Addon(id=__id__).getSetting('ratings_source')
+__extended_plot__ = xbmcaddon.Addon(id=__id__).getSetting("extended_plot")
+__ratings_source__ = xbmcaddon.Addon(id=__id__).getSetting("ratings_source")
 
 
 def set_window_property(value):
@@ -62,8 +62,11 @@ def get_mlink(video, stream_type=None, quality=None, ask_quality="false"):
     if isinstance(files.values()[0], basestring):
         files = {"{}p".format(quality): {stream_type: url} for quality, url in files.items()}
 
-    flatten_urls_dict = {"{}@{}".format(quality, stream): url for quality, urls in files.items()
-                         for stream, url in urls.items()}
+    flatten_urls_dict = {
+        "{}@{}".format(quality, stream): url
+        for quality, urls in files.items()
+        for stream, url in urls.items()
+    }
     urls_list = natural_sort(flatten_urls_dict.keys())
     if ask_quality == "true":
         dialog = xbmcgui.Dialog()
@@ -99,7 +102,7 @@ def build_plot(item):
 # Take rating from specified resource if this rating exist
 def build_rating(item):
 
-    rating = item["imdb_rating"] if __ratings_source__ == 'IMDB' else item["kinopoisk_rating"]
+    rating = item["imdb_rating"] if __ratings_source__ == "IMDB" else item["kinopoisk_rating"]
 
     if __ratings_source__ == "IMDB":
         rating = item["imdb_rating"]
@@ -137,9 +140,9 @@ def build_imdb_number(item):
 
 def build_titles(item):
     try:
-        title, original_title = item['title'].split(" / ")
+        title, original_title = item["title"].split(" / ")
     except ValueError:
-        original_title = title = item['title']
+        original_title = title = item["title"]
     return title, original_title
 
 
