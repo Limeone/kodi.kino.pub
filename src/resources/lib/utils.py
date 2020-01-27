@@ -88,7 +88,7 @@ def video_info(item, extend=None):
     info = {
         "year": int(item["year"]),
         "genre": ", ".join([x["title"] for x in item["genres"]]),
-        "rating": float(item["rating"]),
+        "rating": str(item["imdb_rating"]),
         "cast": [x.strip() for x in item["cast"].split(",")],
         "director": item["director"],
         "plot": build_plot(item),

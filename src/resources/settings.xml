@@ -26,4 +26,15 @@
         <setting id="show_documovies" type="bool" label="Документальные фильмы" default="true"/>
         <setting id="show_docuserials" type="bool" label="Документальные сериалы" default="true"/>
     </category>
+    <category label="Локальная Библиотека">
+        <setting id="sync_enabled" type="bool" label="Включить синхронизацию библиотеки" default="false"/>
+        <setting label="Директория Библиотеки" type="folder" id="folder" source="auto" enable="eq(-1,true)" option="writeable"/>
+        <setting id="skip_anime" type="bool" label="Не добавлять Аниме" default="true" enable="eq(-2,true)"/>
+        <setting type="lsep" label="Фильмы"/>
+        <setting id="save_popular_movie" type="bool" label="Популярные" default="false" enable="eq(-4,true)"/>
+        <setting id="save_hot_movie" type="bool" label="Горячие" default="false" enable="eq(-5,true)"/>
+        <setting type="lsep" label="Сериалы"/>
+        <setting id="save_popular_serial" type="bool" label="Популярные" default="false" enable="eq(-7,true)"/>
+        <setting id="save_hot_serial" type="bool" label="Горячие" default="false" enable="eq(-8,true)"/>
+    </category>
 </settings>

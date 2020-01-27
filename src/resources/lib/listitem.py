@@ -92,12 +92,35 @@ class ExtendedListItem(ListItem):
         url = self.plugin.routing.build_url("similar", item_id, title=title)
         menu_items.append((label, u"Container.Update({})".format(url)))
 
+    def _addLibraryContextMenuItem(self, menu_items):
+        if not self.plugin.settings.sync_enabled:
+            return
+        if not self.plugin.settings.folder:
+            return
+        is_disabled = bool(self.getProperty("is_disabled"))
+        item_id = self.getProperty("id")
+        if not is_disabled:
+            label = "Удалить из Библиотеки"
+            url = self.plugin.routing.build_url("library", "remove", item_id)
+        else:
+            label = "Сохранить в библиотеку"
+            url = self.plugin.routing.build_url("library", "add", item_id)
+        menu_items.append((label, u"Container.Update({})".format(url)))
+
     def _addSeparatorContextMenuItem(self, menu_items):
         # 21 is the maximum number of characters when the horizontal scrolling doesn't appear.
         menu_items.append(("─" * 21, ""))
 
     def addPredefinedContextMenuItems(self, items=None):
-        items = items or ["watched", "watchlist", "bookmarks", "comments", "similar", "separator"]
+        items = items or [
+            "watched",
+            "watchlist",
+            "bookmarks",
+            "comments",
+            "similar",
+            "library",
+            "separator",
+        ]
         menu_items = []
         for item in items:
             getattr(self, "_add{}ContextMenuItem".format(item.capitalize()))(menu_items)

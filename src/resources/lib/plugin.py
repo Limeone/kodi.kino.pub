@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import random
 import sys
 from collections import namedtuple
 from urlparse import parse_qsl
@@ -27,8 +28,12 @@ class Plugin(object):
     def __init__(self):
         self._rules = {}
         self.path = urlsplit(sys.argv[0]).path or "/"
-        self.handle = int(sys.argv[1])
-        self.kwargs = dict(parse_qsl(sys.argv[2].lstrip("?")))
+        try:
+            self.handle = int(sys.argv[1])
+            self.kwargs = dict(parse_qsl(sys.argv[2].lstrip("?")))
+        except IndexError:
+            self.handle = random.randint(200, 300)  # any handle is ok for sync service
+            self.kwargs = {}  # kwargs are empty for sync service
         self.auth = Auth(self)
         self.logger = Logger(self)
         self.routing = Routing(self)
