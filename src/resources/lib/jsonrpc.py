@@ -58,7 +58,10 @@ class RequestHelper(object):
 
     def execute(self, query, log=False):
         json_query = xbmc.executeJSONRPC(json.dumps(query))
-        self.response = json.loads(json_query)
+        try:
+            self.response = json.loads(json_query)
+        except ValueError:
+            self.response = json_query
         return self
 
     def load(self):
@@ -441,6 +444,8 @@ class Movie(SingleItemHelper):
     ]
     UPDATE_QUERY = {"jsonrpc": "2.0", "method": "VideoLibrary.SetMovieDetails", "params": {}}
 
+    REMOVE_QUERY = {"jsonrpc": "2.0", "method": "VideoLibrary.RemoveMovie", "params": {}}
+
     def __init__(self, movieid=None, properties=None, payload=None):
         if payload:
             self.id = payload["movieid"]
@@ -468,6 +473,11 @@ class Movie(SingleItemHelper):
 
     def SetMoviePlaycount(self, playcount=0):
         return self.SetDetails("setResumePoint", playcount=int(playcount))
+
+    def Remove(self):
+        query = Movie.REMOVE_QUERY
+        query["params"]["movieid"] = self.id
+        return self.execute(query)
 
     def _build_query(self, movieid, properties):
         query = TVShow.BASE_QUERY

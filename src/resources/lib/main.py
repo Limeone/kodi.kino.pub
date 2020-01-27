@@ -65,7 +65,9 @@ def build_listitem(item, index, add_index=False):
     if "in_watchlist" in item:
         li.setProperty("in_watchlist", str(int(item["in_watchlist"])))
     if local_tem:
-        li.setProperty("is_disabled", str(int(local_tem["blocked"])))
+        li.setProperty("not_in_library", str(int(local_tem["blocked"])))
+    else:
+        li.setProperty("not_in_library", "1")
     video_info = extract_video_info(
         item, {"trailer": trailer_link(item), "mediatype": content_type_map[item["type"]]}
     )
@@ -757,7 +759,7 @@ def add_to_library(item_id):
         notice("Укажите директорию для Библиотеки")
         return
     response = plugin.client("items/{}".format(item_id)).get()
-    AddonLibrary.add(response["item"], force_library_scan=True)
+    AddonLibrary.add(response["item"], force=True)
 
 
 @plugin.routing.route("/library/remove/<item_id>")

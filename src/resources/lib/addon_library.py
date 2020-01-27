@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+import shutil
 
 import xbmcvfs
 
@@ -45,30 +46,30 @@ class AddonLibrary(object):
                 response = plugin.client("items/{}".format(shortcut)).get(data={"type": section})
                 items = response["items"]
                 for item in items:
-                    cls.add(item, force_library_scan=False)
+                    cls.add(item, force=False)
         VideoLibrary.Scan(cls.DUMP_DIR)
 
     @classmethod
-    def add(cls, info, force_library_scan=True):
+    def add(cls, info, force=True):
         if cls._is_movie(info):
             item = Movie(info)
         elif cls._is_movie_set(info):
             item = MovieSet(info)
         else:
             item = TVShow(info)
-        # anime... skip it when possible
-        if item.is_anime and cls.SKIP_ANIME and not force_library_scan:
-            return
-        # do not fetch already saved and manually blocked items
-        if not item.is_synced and not item.is_blocked:
-            # items fetched with batch do not have enougth info
-            if not force_library_scan:
-                item.fetchExtendedInfo()
 
+        # start library scan if it is manually triggered
+        if force:
             item.sync()
-        # Do not start library scan if it is not manually triggered
-        if force_library_scan:
             VideoLibrary.Scan(cls.DUMP_DIR)
+        else:
+            # anime... skip it when possible
+            if item.is_anime and cls.SKIP_ANIME:
+                return
+            # do not fetch already saved and manually blocked items
+            if not item.is_synced and not item.is_blocked:
+                item.fetchExtendedInfo()
+                item.sync()
 
     @classmethod
     def remove(cls, info):
@@ -298,6 +299,10 @@ class Movie(Base):
 
     def disable_sync(self):
         AddonLibrary.save(self.id, blocked=True)
+        movie = VideoLibrary.FindMovie(title=self.title, year=self.year)
+        if movie:
+            movie.Remove()
+        shutil.rmtree(self.path)
 
     def saveSTRM(self):
         url = plugin.routing.build_url("play", self.info["id"], 1, local=True)
@@ -355,6 +360,15 @@ class MovieSet(Base):
             movie_info["videos"].append({"title": episode.episodetitle, "year": self.year})
 
         AddonLibrary.save(self.id, **movie_info)
+
+    def disable_sync(self):
+        AddonLibrary.save(self.id, blocked=True)
+        for episode_info in self.info["videos"]:
+            episode = MovieSetEpisode(self, episode_info)
+            movie = VideoLibrary.FindMovie(title=episode.episodetitle, year=episode.year)
+            if movie:
+                movie.Remove()
+        shutil.rmtree(self.path)
 
 
 class MovieSetEpisode(Base):
@@ -491,7 +505,7 @@ class TVShow(Base):
         tvshow = VideoLibrary.FindTVShow(title=self.title, year=self.year)
         if tvshow:
             tvshow.Remove()
-        os.remove(self.path)
+        shutil.rmtree(self.path)
 
     def save_episodes(self):
         for season in self.info["seasons"]:

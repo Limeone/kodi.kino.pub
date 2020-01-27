@@ -97,14 +97,18 @@ class ExtendedListItem(ListItem):
             return
         if not self.plugin.settings.folder:
             return
-        is_disabled = bool(self.getProperty("is_disabled"))
+        if self.getVideoInfoTag().getMediaType() == "season":
+            return
+        if self.getVideoInfoTag().getMediaType() == "episode":
+            return
+        not_in_library = int(self.getProperty("not_in_library"))
         item_id = self.getProperty("id")
-        if not is_disabled:
-            label = "Удалить из Библиотеки"
-            url = self.plugin.routing.build_url("library", "remove", item_id)
-        else:
+        if not_in_library:
             label = "Сохранить в библиотеку"
             url = self.plugin.routing.build_url("library", "add", item_id)
+        else:
+            label = "Удалить из Библиотеки"
+            url = self.plugin.routing.build_url("library", "remove", item_id)
         menu_items.append((label, u"Container.Update({})".format(url)))
 
     def _addSeparatorContextMenuItem(self, menu_items):

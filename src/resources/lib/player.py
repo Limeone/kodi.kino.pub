@@ -81,7 +81,6 @@ class Player(xbmc.Player):
         elif item:
             title = item["videos"][video_number - 1]["title"]
             year = item["videos"][video_number - 1]["year"]
-            self.plugin.logger.warning(title)
             movie = VideoLibrary.FindMovie(title=title, year=year)
             if movie:
                 resp = movie.SetMovieMarktime(marktime=data["time"], total=self.play_duration)
