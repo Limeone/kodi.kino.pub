@@ -88,7 +88,7 @@ def video_info(item, extend=None):
     info = {
         "year": int(item["year"]),
         "genre": ", ".join([x["title"] for x in item["genres"]]),
-        "rating": float(item["rating"]),
+        "rating": str(item["imdb_rating"]),
         "cast": [x.strip() for x in item["cast"].split(",")],
         "director": item["director"],
         "plot": build_plot(item),
@@ -105,7 +105,13 @@ def video_info(item, extend=None):
 
 
 def notice(message, heading="", time=4000):
-    xbmc.executebuiltin('XBMC.Notification("{}", "{}", "{}")'.format(heading, message, time))
+    from resources.lib.main import plugin
+
+    xbmc.executebuiltin(
+        'XBMC.Notification("{}", "{}", "{}", "{}")'.format(
+            heading, message, time, plugin.PLUGIN_ICON
+        )
+    )
 
 
 def trailer_link(item):

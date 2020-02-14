@@ -22,6 +22,7 @@ from resources.lib.utils import (
 )
 from resources.lib.player import Player
 from resources.lib.plugin import Plugin
+from resources.lib.addon_library import AddonLibrary
 
 
 content_type_map = {
@@ -50,59 +51,68 @@ def show_pagination(pagination):
     xbmcplugin.endOfDirectory(plugin.handle, cacheToDisc=False)
 
 
+def build_listitem(item, index, add_index=False):
+    playback_data = {}
+    title = item["title"]
+    title = u"{}. {}".format(index, title) if add_index else title
+    local_tem = AddonLibrary.find(item["id"]) if AddonLibrary.ENABLED else None
+    li = plugin.list_item(
+        title,
+        poster=item["posters"]["big"],
+        fanart=item["posters"]["wide"],
+        properties={"id": item["id"]},
+    )
+    if "in_watchlist" in item:
+        li.setProperty("in_watchlist", str(int(item["in_watchlist"])))
+    if local_tem:
+        li.setProperty("not_in_library", str(int(local_tem["blocked"])))
+    else:
+        li.setProperty("not_in_library", "1")
+    video_info = extract_video_info(
+        item, {"trailer": trailer_link(item), "mediatype": content_type_map[item["type"]]}
+    )
+    # If not serials or multiseries movie, create a playable item
+    if item["type"] not in ["serial", "docuserial", "tvshow"] and not item["subtype"]:
+        watching_info = plugin.client("watching").get(data={"id": item["id"]})["item"]["videos"][0]
+        video_info.update(
+            {
+                "time": watching_info["time"],
+                "duration": watching_info["duration"],
+                "playcount": watching_info["status"],
+            }
+        )
+        link = plugin.routing.build_url("play", item["id"], index)
+        li.setProperty("isPlayable", "true")
+        li.setResumeTime(watching_info["time"], watching_info["duration"])
+        isdir = False
+        playback_data = {"video_info": video_info, "poster": item["posters"]["big"], "title": title}
+
+    elif item["subtype"] == "multi":
+        watching_info = plugin.client("watching").get(data={"id": item["id"]})["item"]
+        li.setProperty("subtype", "multi")
+        video_info.update({"playcount": watching_info["status"]})
+        link = plugin.routing.build_url("episodes", item["id"])
+        isdir = True
+    else:
+        link = plugin.routing.build_url("seasons", item["id"])
+        isdir = True
+    li.setInfo("video", video_info)
+    li.addPredefinedContextMenuItems()
+    li.markAdvert(item["advert"])
+
+    return (link, li, isdir), playback_data
+
+
 def show_items(items, content_type, add_indexes=False):
     xbmcplugin.setContent(plugin.handle, content_type_map[content_type.rstrip("s")])
     playback_data = {}
-    # Fill list with items
+    listitems = []
     for index, item in enumerate(items, 1):
-        title = item["title"]
-        title = u"{}. {}".format(index, title) if add_indexes else title
-        li = plugin.list_item(
-            title,
-            poster=item["posters"]["big"],
-            fanart=item["posters"]["wide"],
-            properties={"id": item["id"]},
-        )
-        if "in_watchlist" in item:
-            li.setProperty("in_watchlist", str(int(item["in_watchlist"])))
-        video_info = extract_video_info(
-            item, {"trailer": trailer_link(item), "mediatype": content_type_map[item["type"]]}
-        )
-        # If not serials or multiseries movie, create a playable item
-        if item["type"] not in ["serial", "docuserial", "tvshow"] and not item["subtype"]:
-            watching_info = plugin.client("watching").get(data={"id": item["id"]})["item"][
-                "videos"
-            ][0]
-            video_info.update(
-                {
-                    "time": watching_info["time"],
-                    "duration": watching_info["duration"],
-                    "playcount": watching_info["status"],
-                }
-            )
-            link = plugin.routing.build_url("play", item["id"], index)
-            li.setProperty("isPlayable", "true")
-            li.setResumeTime(watching_info["time"], watching_info["duration"])
-            isdir = False
-            playback_data[index] = {
-                "video_info": video_info,
-                "poster": item["posters"]["big"],
-                "title": title,
-            }
-            set_window_property(playback_data)
-        elif item["subtype"] == "multi":
-            watching_info = plugin.client("watching").get(data={"id": item["id"]})["item"]
-            li.setProperty("subtype", "multi")
-            video_info.update({"playcount": watching_info["status"]})
-            link = plugin.routing.build_url("episodes", item["id"])
-            isdir = True
-        else:
-            link = plugin.routing.build_url("seasons", item["id"])
-            isdir = True
-        li.setInfo("video", video_info)
-        li.addPredefinedContextMenuItems()
-        li.markAdvert(item["advert"])
-        xbmcplugin.addDirectoryItem(plugin.handle, link, li, isdir)
+        listitem, item_playback_data = build_listitem(item, index, add_indexes)
+        listitems.append(listitem)
+        playback_data[index] = item_playback_data
+    set_window_property(playback_data)
+    xbmcplugin.addDirectoryItems(plugin.handle, listitems, len(items))
 
 
 @plugin.routing.route("/login")
@@ -280,47 +290,99 @@ def seasons(item_id):
     xbmcplugin.endOfDirectory(plugin.handle, cacheToDisc=False)
 
 
+def build_episode_listitem(item, video, watching_info):
+    watching_episode = watching_info["videos"][video["number"] - 1]
+    episode_title = "e{:02d}".format(video["number"])
+    if video["title"]:
+        episode_title = u"{} | {}".format(episode_title, video["title"])
+    info = extract_video_info(
+        item,
+        {
+            "episode": video["number"],
+            "tvshowtitle": video["title"],
+            "time": watching_episode["time"],
+            "duration": watching_episode["duration"],
+            "playcount": video["watched"],
+            "mediatype": "episode",
+        },
+    )
+    li = plugin.list_item(
+        episode_title,
+        thumbnailImage=video["thumbnail"],
+        video_info=info,
+        poster=item["posters"]["big"],
+        fanart=item["posters"]["wide"],
+        properties={"id": item["id"], "isPlayable": "true"},
+        addContextMenuItems=True,
+    )
+    url = plugin.routing.build_url("play", item["id"], video["number"])
+    playback_data = {
+        "video_data": video,
+        "video_info": info,
+        "poster": item["posters"]["big"],
+        "title": episode_title,
+    }
+
+    return (url, li, False), playback_data
+
+
 @plugin.routing.route("/episodes/<item_id>")
 def episodes(item_id):
     item = plugin.client("items/{}".format(item_id)).get()["item"]
     watching_info = plugin.client("watching").get(data={"id": item_id})["item"]
     xbmcplugin.setContent(plugin.handle, "episodes")
     playback_data = {}
+    listitems = []
     for video in item["videos"]:
-        watching_episode = watching_info["videos"][video["number"] - 1]
-        episode_title = "e{:02d}".format(video["number"])
-        if video["title"]:
-            episode_title = u"{} | {}".format(episode_title, video["title"])
-        info = extract_video_info(
-            item,
-            {
-                "episode": video["number"],
-                "tvshowtitle": video["title"],
-                "time": watching_episode["time"],
-                "duration": watching_episode["duration"],
-                "playcount": video["watched"],
-                "mediatype": "episode",
-            },
-        )
-        li = plugin.list_item(
-            episode_title,
-            thumbnailImage=video["thumbnail"],
-            video_info=info,
-            poster=item["posters"]["big"],
-            fanart=item["posters"]["wide"],
-            properties={"id": item["id"], "isPlayable": "true"},
-            addContextMenuItems=True,
-        )
-        url = plugin.routing.build_url("play", item["id"], video["number"])
-        playback_data[video["number"]] = {
-            "video_data": video,
-            "video_info": info,
-            "poster": item["posters"]["big"],
-            "title": episode_title,
-        }
-        xbmcplugin.addDirectoryItem(plugin.handle, url, li, False)
+        listitem, playback_data_item = build_episode_listitem(item, video, watching_info)
+        playback_data[video["number"]] = playback_data_item
+        listitems.append(listitem)
+    xbmcplugin.addDirectoryItems(plugin.handle, listitems, len(listitems))
     set_window_property(playback_data)
     xbmcplugin.endOfDirectory(plugin.handle, cacheToDisc=False)
+
+
+def build_season_episode_listitem(
+    item, watching_info, season_number, episode, selectedEpisode=False
+):
+    watching_season = watching_info["seasons"][season_number - 1]
+    watching_episode = watching_season["episodes"][episode["number"] - 1]
+    episode_title = "s{:02d}e{:02d}".format(season_number, episode["number"])
+    if episode["title"]:
+        episode_title = u"{} | {}".format(episode_title, episode["title"])
+    info = extract_video_info(
+        item,
+        {
+            "title": episode_title,
+            "season": season_number,
+            "episode": episode["number"],
+            "tvshowtitle": item["title"],
+            "time": watching_episode["time"],
+            "duration": watching_episode["duration"],
+            "playcount": watching_episode["status"],
+            "mediatype": "episode",
+        },
+    )
+    li = plugin.list_item(
+        episode_title,
+        thumbnailImage=episode["thumbnail"],
+        poster=item["posters"]["big"],
+        fanart=item["posters"]["wide"],
+        video_info=info,
+        properties={"id": item["id"], "isPlayable": "true"},
+        addContextMenuItems=True,
+    )
+    if watching_episode["status"] < 1 and not selectedEpisode:
+        selectedEpisode = True
+        li.select(selectedEpisode)
+    url = plugin.routing.build_url("play", item["id"], episode["number"])
+    playback_data = {
+        "video_data": episode,
+        "video_info": info,
+        "poster": item["posters"]["big"],
+        "title": episode_title,
+    }
+    return (url, li, False), playback_data
 
 
 @plugin.routing.route("/season_episodes/<item_id>/<season_number>")
@@ -329,52 +391,21 @@ def season_episodes(item_id, season_number):
     watching_info = plugin.client("watching").get(data={"id": item_id})["item"]
     season_number = int(season_number)
     season = item["seasons"][season_number - 1]
-    watching_season = watching_info["seasons"][season_number - 1]
-    selectedEpisode = False
     xbmcplugin.setContent(plugin.handle, "episodes")
     playback_data = {}
+    listitems = []
     for episode in season["episodes"]:
         # In tvshow season could be a case when some episodes are not available, but episode numbers
         # in response payload are set correctly.
         try:
-            watching_episode = watching_season["episodes"][episode["number"] - 1]
+            listitem, playback_data_item = build_season_episode_listitem(
+                item, watching_info, season_number, episode
+            )
         except IndexError:
             continue
-        episode_title = "s{:02d}e{:02d}".format(season_number, episode["number"])
-        if episode["title"]:
-            episode_title = u"{} | {}".format(episode_title, episode["title"])
-        info = extract_video_info(
-            item,
-            {
-                "season": season_number,
-                "episode": episode["number"],
-                "tvshowtitle": episode["title"],
-                "time": watching_episode["time"],
-                "duration": watching_episode["duration"],
-                "playcount": watching_episode["status"],
-                "mediatype": "episode",
-            },
-        )
-        li = plugin.list_item(
-            episode_title,
-            thumbnailImage=episode["thumbnail"],
-            poster=item["posters"]["big"],
-            fanart=item["posters"]["wide"],
-            video_info=info,
-            properties={"id": item["id"], "isPlayable": "true"},
-            addContextMenuItems=True,
-        )
-        if watching_episode["status"] < 1 and not selectedEpisode:
-            selectedEpisode = True
-            li.select(selectedEpisode)
-        url = plugin.routing.build_url("play", item["id"], episode["number"])
-        playback_data[episode["number"]] = {
-            "video_data": episode,
-            "video_info": info,
-            "poster": item["posters"]["big"],
-            "title": episode_title,
-        }
-        xbmcplugin.addDirectoryItem(plugin.handle, url, li, False)
+        playback_data[episode["number"]] = playback_data_item
+        listitems.append(listitem)
+    xbmcplugin.addDirectoryItems(plugin.handle, listitems, len(listitems))
     set_window_property(playback_data)
     xbmcplugin.endOfDirectory(plugin.handle, cacheToDisc=False)
 
@@ -397,7 +428,32 @@ def play(item_id, index):
                     "inputstream.adaptive.manifest_type": "hls",
                 }
             )
-    playback_data = get_window_property(index)
+
+    if plugin.kwargs.get("local"):
+        is_tvshow_episode = bool(plugin.kwargs.get("season"))
+        is_multi_episode = bool(plugin.kwargs.get("multi"))
+        item = plugin.client("items/{}".format(item_id)).get()["item"]
+
+        if is_tvshow_episode:
+            watching_info = plugin.client("watching").get(data={"id": item_id})["item"]
+            season_number = int(plugin.kwargs.get("season"))
+            season = item["seasons"][season_number - 1]
+            li, playback_data = build_season_episode_listitem(
+                item,
+                watching_info,
+                int(plugin.kwargs.get("season")),
+                season["episodes"][int(index) - 1],
+            )
+        elif is_multi_episode:
+            watching_info = plugin.client("watching").get(data={"id": item_id})["item"]
+
+            li, playback_data = build_episode_listitem(
+                item, item["videos"][int(index) - 1], watching_info
+            )
+        else:
+            li, playback_data = build_listitem(item, int(index))
+    else:
+        playback_data = get_window_property(index)
     video_data = playback_data.get("video_data")
     video_info = playback_data["video_info"]
     if not video_data:
@@ -431,6 +487,8 @@ def play(item_id, index):
         poster=playback_data["poster"],
         subtitles=[subtitle["url"] for subtitle in video_data["subtitles"]],
     )
+    li.setProperty("resumetime", str(video_info["time"]))
+    li.setProperty("totaltime", str(video_info["duration"]))
     player = Player(list_item=li)
     xbmcplugin.setResolvedUrl(plugin.handle, True, li)
     while player.is_playing:
@@ -695,3 +753,39 @@ def install_inputstream_helper():
         notice("inputstream helper установлен")
     except RuntimeError:
         xbmc.executebuiltin("InstallAddon(script.module.inputstreamhelper)")
+
+
+@plugin.routing.route("/library/add/<item_id>")
+def add_to_library(item_id):
+    if not plugin.settings.folder:
+        notice("Укажите директорию для Библиотеки")
+        return
+    response = plugin.client("items/{}".format(item_id)).get()
+    AddonLibrary.SyncItem(response["item"], force=True)
+    AddonLibrary.ScanVideoLibrary()
+
+
+@plugin.routing.route("/library/remove/<item_id>")
+def remove_from_library(item_id):
+    if not plugin.settings.folder:
+        return
+    response = plugin.client("items/{}".format(item_id)).get()
+    AddonLibrary.DisableItem(response["item"])
+
+
+@plugin.routing.route("/library/sync")
+def sync_library(item_id):
+    if not plugin.settings.folder:
+        return
+    synced_ids = AddonLibrary.SyncSectionsToVideoLibray()
+    # Do not update just proceeded items
+    AddonLibrary.UpdateSavedMedia(exclude=synced_ids)
+    # Force kodi to update Video Library
+    AddonLibrary.ScanVideoLibrary()
+
+
+@plugin.routing.route("/library/cleanup")
+def cleanup_library(item_id):
+    if not plugin.settings.folder:
+        return
+    AddonLibrary.cleanup()
