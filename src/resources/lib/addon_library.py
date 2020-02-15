@@ -61,7 +61,7 @@ class AddonLibrary(object):
 
     @classmethod
     def cleanup(cls):
-        if os.path.isdir(cls.DUMP_PATH):
+        if os.path.isdir(cls.DUMP_DIR):
             shutil.rmtree(cls.DUMP_DIR)
         VideoLibrary.Clean()
 
@@ -221,6 +221,9 @@ class Base(object):
         self.naming = Base.NAMING_CONVENTION[_type]
         self.type = _type
         self.info = info
+        self._init_path()
+
+    def _init_path(self):
         if not os.path.isdir(self.path):
             os.makedirs(self.path)
 
@@ -362,6 +365,7 @@ class Movie(Base):
             if saved_item.get("multi", False):
                 movie_set = MovieSet(self.info)
                 movie_set.destroy()
+                self._init_path()
         if self.insufficient_info:
             self.fetchExtendedInfo()
         self.saveNFO()
@@ -451,9 +455,10 @@ class MovieSet(Base):
         AddonLibrary.save(self.id, **movie_info)
 
     def disable_sync(self, block=True):
-        for episode_info in self.info["videos"]:
-            episode = MovieSetEpisode(self, episode_info)
-            movie = VideoLibrary.FindMovie(title=episode.episodetitle, year=episode.year)
+        dump_info = AddonLibrary.find(self.id)
+        for episode_info in dump_info["videos"]:
+            # episode = MovieSetEpisode(self, episode_info)
+            movie = VideoLibrary.FindMovie(title=episode_info["title"], year=episode_info["year"])
             if movie:
                 movie.Remove()
         shutil.rmtree(self.path)

@@ -774,7 +774,7 @@ def remove_from_library(item_id):
 
 
 @plugin.routing.route("/library/sync")
-def sync_library(item_id):
+def sync_library():
     if not plugin.settings.folder:
         return
     synced_ids = AddonLibrary.SyncSectionsToVideoLibray()
@@ -785,7 +785,7 @@ def sync_library(item_id):
 
 
 @plugin.routing.route("/library/cleanup")
-def cleanup_library(item_id):
+def cleanup_library():
     if not plugin.settings.folder:
         return
     AddonLibrary.cleanup()
